@@ -8,10 +8,8 @@ const addressSearchBtn = document.getElementById('addressSearchBtn');
 const addressStatus = document.getElementById('addressStatus');
 
 // ---------- Map setup ----------
-// Centered on Ghana by default, zoomed out until a location is set.
 const map = L.map('pickMap').setView([7.9465, -1.0232], 7);
 
-// Plain OpenStreetMap tiles - free forever, no API key required.
 const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors',
     maxZoom: 19
@@ -33,7 +31,6 @@ L.control.layers(
     { position: 'topright' }
 ).addTo(map);
 
-// A custom pulsing dot marker instead of Leaflet's plain default pin.
 const pulseIcon = L.divIcon({
     className: 'custom-pulse-icon',
     html: '<div class="pulse-icon"><div class="ring"></div><div class="dot"></div></div>',
@@ -64,7 +61,6 @@ map.on('click', (e) => {
     addressStatus.textContent = '';
 });
 
-// ---------- GPS capture ----------
 function captureLocation() {
     if (!navigator.geolocation) {
         locationStatus.textContent = 'Location capture is not supported on this browser.';
@@ -83,7 +79,6 @@ function captureLocation() {
 
 captureLocation();
 
-// ---------- Address search ----------
 addressSearchBtn.addEventListener('click', async () => {
     const query = addressInput.value.trim();
 
@@ -109,27 +104,36 @@ addressSearchBtn.addEventListener('click', async () => {
     }
 });
 
-// ---------- Form submission ----------
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const payload = {
-        latitude: parseFloat(latitudeField.value),
-        longitude: parseFloat(longitudeField.value),
-        severity: document.getElementById('severity').value,
-        description: document.getElementById('description').value
-    };
+    const latitude = parseFloat(latitudeField.value);
+    const longitude = parseFloat(longitudeField.value);
 
-    if (!payload.latitude || !payload.longitude) {
+    if (!latitude || !longitude) {
         responseMessage.textContent = 'Location has not been captured yet. Please allow location access, search an address, or click the map.';
         return;
+    }
+
+    // FormData instead of a JSON object, because this request may include
+    // a file. The browser builds the correct multipart/form-data body and
+    // sets its own Content-Type header (with the required boundary string)
+    // automatically - we must not set that header ourselves.
+    const formData = new FormData();
+    formData.append('latitude', latitude);
+    formData.append('longitude', longitude);
+    formData.append('severity', document.getElementById('severity').value);
+    formData.append('description', document.getElementById('description').value);
+
+    const photoFile = document.getElementById('photo').files[0];
+    if (photoFile) {
+        formData.append('photo', photoFile);
     }
 
     try {
         const res = await fetch('/api/report', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: formData
         });
 
         const data = await res.json();

@@ -268,3 +268,11 @@ html, body {
     width: 34px !important;
     height: 34px !important;
 }
+.popup-photo {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    border-radius: 6px;
+    margin-top: 8px;
+    cursor: pointer;
+}

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from sqlalchemy import func
@@ -9,6 +9,7 @@ from config import Config
 from models import db, Report
 from region_lookup import resolve_region_district
 from sanitize import sanitize_text
+from image_utils import process_photo
 from town_lookup import resolve_town
 
 ALLOWED_SEVERITIES = {'low', 'medium', 'high', 'critical'}
@@ -33,15 +34,13 @@ def create_app():
     @app.route('/api/report', methods=['POST'])
     @limiter.limit('5 per hour')
     def submit_report():
-        data = request.get_json(silent=True)
-
-        if not data:
-            return jsonify({'error': 'No JSON data received'}), 400
-
-        latitude = data.get('latitude')
-        longitude = data.get('longitude')
-        severity = data.get('severity')
-        description = sanitize_text(data.get('description', ''))
+        # Switched from a JSON body to multipart/form-data, because a file
+        # upload cannot be represented inside plain JSON. Text fields now
+        # come from request.form instead of a parsed JSON dictionary.
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
+        severity = request.form.get('severity')
+        description = sanitize_text(request.form.get('description', ''))
 
         if latitude is None or longitude is None:
             return jsonify({'error': 'latitude and longitude are required'}), 400
@@ -58,6 +57,18 @@ def create_app():
         if severity not in ALLOWED_SEVERITIES:
             return jsonify({'error': f'severity must be one of {sorted(ALLOWED_SEVERITIES)}'}), 400
 
+        photo_bytes = None
+        photo_mimetype = None
+        photo_file = request.files.get('photo')
+
+        # An empty file input still arrives as a file part with no filename,
+        # so we check filename too, not just whether the key exists.
+        if photo_file and photo_file.filename:
+            try:
+                photo_bytes, photo_mimetype = process_photo(photo_file)
+            except ValueError as e:
+                return jsonify({'error': str(e)}), 400
+
         region, district = resolve_region_district(latitude, longitude)
         town = resolve_town(latitude, longitude)
 
@@ -68,13 +79,24 @@ def create_app():
             district=district,
             town=town,
             severity=severity,
-            description=description
+            description=description,
+            photo=photo_bytes,
+            photo_mimetype=photo_mimetype
         )
 
         db.session.add(new_report)
         db.session.commit()
 
         return jsonify(new_report.to_dict()), 201
+
+    @app.route('/api/report/<report_id>/photo', methods=['GET'])
+    def report_photo(report_id):
+        report = Report.query.get(report_id)
+
+        if not report or not report.photo:
+            return jsonify({'error': 'Photo not found'}), 404
+
+        return Response(report.photo, mimetype=report.photo_mimetype or 'image/jpeg')
 
     @app.route('/api/reports', methods=['GET'])
     def get_reports():
@@ -178,6 +200,11 @@ def create_app():
 
 
 app = create_app()
+
+
+@app.errorhandler(413)
+def file_too_large(e):
+    return jsonify({'error': 'Photo is too large. Please use a smaller image (under 8MB).'}), 413
 
 
 @app.errorhandler(429)

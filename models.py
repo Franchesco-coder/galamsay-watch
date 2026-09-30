@@ -15,6 +15,8 @@ class Report(db.Model):
     town = db.Column(db.String(150))
     severity = db.Column(db.String(20), nullable=False)
     description = db.Column(db.Text)
+    photo = db.Column(db.LargeBinary)
+    photo_mimetype = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(20), default='unverified')
 
@@ -29,5 +31,6 @@ class Report(db.Model):
             'severity': self.severity,
             'description': self.description,
             'created_at': self.created_at.isoformat(),
-            'status': self.status
+            'status': self.status,
+            'photo_url': f'/api/report/{self.id}/photo' if self.photo else None
         }

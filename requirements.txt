@@ -7,3 +7,4 @@ geopy
 shapely
 flask-limiter
 gunicorn
+pillow
