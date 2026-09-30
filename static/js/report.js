@@ -12,10 +12,26 @@ const addressStatus = document.getElementById('addressStatus');
 const map = L.map('pickMap').setView([7.9465, -1.0232], 7);
 
 // Plain OpenStreetMap tiles - free forever, no API key required.
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors',
     maxZoom: 19
-}).addTo(map);
+});
+
+const satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+        attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        maxZoom: 19
+    }
+);
+
+streetLayer.addTo(map);
+
+L.control.layers(
+    { 'Street': streetLayer, 'Satellite': satelliteLayer },
+    null,
+    { position: 'topright' }
+).addTo(map);
 
 // A custom pulsing dot marker instead of Leaflet's plain default pin.
 const pulseIcon = L.divIcon({
