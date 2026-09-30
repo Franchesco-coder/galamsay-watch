@@ -7,10 +7,28 @@ const filterBoxes = document.querySelectorAll('.severity-filter');
 // ---------- Map setup ----------
 const map = L.map('liveMap').setView([7.9465, -1.0232], 7);
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors',
     maxZoom: 19
-}).addTo(map);
+});
+
+const satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+        attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        maxZoom: 19
+    }
+);
+
+// Street view shows by default; the layer control below lets the
+// visitor switch to satellite imagery whenever they want.
+streetLayer.addTo(map);
+
+L.control.layers(
+    { 'Street': streetLayer, 'Satellite': satelliteLayer },
+    null,
+    { position: 'bottomleft' }
+).addTo(map);
 
 // ---------- Icons ----------
 function createMarkerIcon(severity) {
