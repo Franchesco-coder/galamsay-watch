@@ -103,7 +103,6 @@ def create_app():
 
     @app.route('/api/stats', methods=['GET'])
     def stats():
-        # One row per severity, e.g. [('low', 3), ('high', 5), ...]
         severity_rows = (
             db.session.query(Report.severity, func.count(Report.id))
             .group_by(Report.severity)
@@ -111,8 +110,6 @@ def create_app():
         )
         by_severity = dict(severity_rows)
 
-        # Missing/blank regions are grouped together as "Unknown" rather
-        # than being counted as their own separate, unlabeled group.
         region_expr = func.coalesce(Report.region, 'Unknown')
         region_rows = (
             db.session.query(region_expr, func.count(Report.id))
@@ -121,7 +118,6 @@ def create_app():
         )
         by_region = dict(region_rows)
 
-        # to_char is PostgreSQL-specific - fine since that's our only database.
         month_expr = func.to_char(Report.created_at, 'YYYY-MM')
         month_rows = (
             db.session.query(month_expr, func.count(Report.id))
@@ -185,12 +181,13 @@ def create_app():
     return app
 
 
+app = create_app()
+
+
 @app.errorhandler(429)
 def ratelimit_handler(e):
     return jsonify({'error': 'Too many requests. Please try again later.'}), 429
 
-
-app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True)
