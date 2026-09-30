@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Illegal Mining - Galamsay Watch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Report Suspected Illegal Mining</h1>
+        <p>This report is completely anonymous. We do not ask for your name or contact details.</p>
+
+        <form id="reportForm">
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+
+            <p id="locationStatus">Detecting your location...</p>
+
+            <div class="address-search">
+                <label for="addressInput">Or type an address instead</label>
+                <input type="text" id="addressInput" placeholder="e.g. Obuasi, Ashanti">
+                <button type="button" id="addressSearchBtn">Use this address</button>
+                <p id="addressStatus"></p>
+            </div>
+
+            <label>Or click on the map to drop a pin 📍</label>
+            <div class="map-container">
+                <div id="pickMap"></div>
+            </div>
+            <p class="map-hint">Tap or click anywhere on the map to set your location manually.</p>
+
+            <label for="severity">Severity</label>
+            <select id="severity" name="severity" required>
+                <option value="">-- Select severity --</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+
+            <label for="description">Description (optional)</label>
+            <textarea id="description" name="description" rows="4" placeholder="Describe what you observed..."></textarea>
+
+            <button type="submit">Submit Report</button>
+        </form>
+
+        <p id="responseMessage"></p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/report.js') }}"></script>
+</body>
+</html>

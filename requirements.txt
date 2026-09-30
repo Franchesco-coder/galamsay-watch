@@ -1,0 +1,9 @@
+flask
+flask-sqlalchemy
+flask-migrate
+python-dotenv
+psycopg2-binary
+geopy
+shapely
+flask-limiter
+gunicorn

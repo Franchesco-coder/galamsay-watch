@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analytics Dashboard - Galamsay Watch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">📊 Galamsay Watch <span class="subtitle">Analytics</span></div>
+        <div class="nav-links">
+            <a class="nav-link" href="/map">🗺️ Live Map</a>
+            <a class="nav-link report-link" href="/report">+ File a report</a>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <div class="summary-row">
+            <div class="summary-card">
+                <span class="summary-number" id="totalCount">-</span>
+                <span class="summary-label">Total Reports</span>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Reports by Severity</h3>
+                <canvas id="severityChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Reports by Region</h3>
+                <canvas id="regionChart"></canvas>
+            </div>
+            <div class="chart-card wide">
+                <h3>Reports Over Time</h3>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

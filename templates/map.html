@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Live Reports Map - Galamsay Watch</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            🌍 Galamsay Watch
+            <span class="live-dot"></span>
+            <span class="live-text">Live</span>
+        </div>
+        <a class="report-link" href="/dashboard">📊 Dashboard</a>
+        <a class="report-link" href="/report">+ File a report</a>
+        <button id="toggleViewBtn" class="report-link toggle-btn">Show Heatmap</button>
+    </header>
+
+    <div id="liveMap"></div>
+
+    <div class="panel">
+        <h3>Filter by severity</h3>
+        <label class="chk"><input type="checkbox" class="severity-filter" value="low" checked><span class="swatch low"></span> Low</label>
+        <label class="chk"><input type="checkbox" class="severity-filter" value="medium" checked><span class="swatch medium"></span> Medium</label>
+        <label class="chk"><input type="checkbox" class="severity-filter" value="high" checked><span class="swatch high"></span> High</label>
+        <label class="chk"><input type="checkbox" class="severity-filter" value="critical" checked><span class="swatch critical"></span> Critical</label>
+        <p id="stats">Loading reports...</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+</body>
+</html>
