@@ -13,14 +13,8 @@ from town_lookup import resolve_town
 
 ALLOWED_SEVERITIES = {'low', 'medium', 'high', 'critical'}
 
-# Created once, reused for every request - Nominatim requires a custom
-# user_agent identifying your app (their usage policy, not optional).
 geolocator = Nominatim(user_agent="galamsay_watch_app")
 
-# key_func=get_remote_address means limits are tracked per visitor IP address.
-# No storage_uri is set, so Flask-Limiter keeps counts in memory - fine for
-# one development server, but a real multi-server deployment would point
-# this at Redis instead so every server shares the same counts.
 limiter = Limiter(key_func=get_remote_address)
 
 
@@ -89,8 +83,6 @@ def create_app():
 
     @app.route('/api/heatmap', methods=['GET'])
     def heatmap():
-        # A weight per severity, so a critical report contributes more
-        # "heat" to the map than a low one, even if there's only one of it.
         weight_by_severity = {'low': 1, 'medium': 2, 'high': 3, 'critical': 5}
 
         reports = Report.query.all()
@@ -165,6 +157,10 @@ def create_app():
             'longitude': location.longitude,
             'display_name': location.address
         }), 200
+
+    @app.route('/')
+    def home_page():
+        return render_template('index.html')
 
     @app.route('/dashboard')
     def dashboard_page():

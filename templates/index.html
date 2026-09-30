@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Galamsay Watch - Anonymous Illegal Mining Reports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge">🌍 Anonymous &amp; Free</div>
+            <h1>Galamsay Watch</h1>
+            <p class="tagline">
+                Report suspected illegal mining anonymously. See where it's happening.
+                Help protect Ghana's land and water for the next generation.
+            </p>
+        </div>
+    </header>
+
+    <main class="cards-section">
+        <a class="action-card report" href="/report">
+            <div class="card-icon">📍</div>
+            <h2>File a Report</h2>
+            <p>Report a suspected site anonymously. Your exact location is never shown to you or shared.</p>
+            <span class="card-cta">Report now →</span>
+        </a>
+
+        <a class="action-card map" href="/map">
+            <div class="card-icon">🗺️</div>
+            <h2>Live Map</h2>
+            <p>See every report plotted live, with clustering, filters, and a heatmap of activity.</p>
+            <span class="card-cta">View map →</span>
+        </a>
+
+        <a class="action-card dashboard" href="/dashboard">
+            <div class="card-icon">📊</div>
+            <h2>Dashboard</h2>
+            <p>Charts breaking down reports by severity, region, and how activity is trending over time.</p>
+            <span class="card-cta">View dashboard →</span>
+        </a>
+    </main>
+
+    <section class="about-section">
+        <div class="about-card">
+            <div class="about-photo">FT</div>
+            <div class="about-text">
+                <h3>About this project</h3>
+                <p>
+                    <strong>Galamsay Watch</strong> was built by <strong>Francis Totsi</strong>, a
+                    4th-year Geomatic Engineering student at the
+                    <strong>Kwame Nkrumah University of Science and Technology (KNUST)</strong>.
+                </p>
+                <p>
+                    This is my first full web application — built to explore how geospatial data,
+                    web mapping, and everyday software engineering can come together to support
+                    Ghana's fight against illegal small-scale mining (galamsay). It combines
+                    anonymous crowd-sourced reporting with automatic geospatial lookups
+                    (region, district and town), an interactive live map, and basic analytics,
+                    all built from scratch with Python, Flask, PostgreSQL and Leaflet.
+                </p>
+                <div class="about-tags">
+                    <span class="tag">🎓 KNUST</span>
+                    <span class="tag">📐 Geomatic Engineering</span>
+                    <span class="tag">💻 First Project</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <p>Built with care by <strong>Francis Totsi</strong> · Geomatic Engineering, KNUST</p>
+        <p class="footer-sub">Galamsay Watch is an independent student project and is not affiliated with any government body.</p>
+    </footer>
+</body>
+</html>
