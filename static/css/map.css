@@ -276,3 +276,19 @@ html, body {
     margin-top: 8px;
     cursor: pointer;
 }
+.status-pill {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #eee;
+    color: #555;
+    margin-left: 6px;
+}
+
+.status-pill.status-corroborated { background: #fff1e0; color: #b35900; }
+.status-pill.status-verified     { background: #e6f4ea; color: #1b4332; }
+.status-pill.status-rejected     { background: #fbe6e6; color: #a30000; }
+.status-pill.status-resolved     { background: #e8eaf0; color: #1b4332; }

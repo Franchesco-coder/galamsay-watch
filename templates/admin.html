@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Review - Galamsay Watch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>   
+<body>
+    <header class="topbar">
+        <div class="brand">🔒 Galamsay Watch <span class="subtitle">Admin Review</span></div>
+        <div class="nav-links">
+            <a class="nav-link" href="/map">🗺️ Live Map</a>
+            <a class="nav-link" href="/admin/logout">Log Out</a>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <p class="count-line">{{ reports|length }} total reports</p>
+
+        {% for r in reports %}
+        <div class="review-card status-{{ r.status }}">
+            <div class="review-top">
+                <span class="badge {{ r.severity }}">{{ r.severity }}</span>
+                <span class="status-pill status-{{ r.status }}">{{ r.status }}</span>
+                <span class="review-time">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }} UTC</span>
+            </div>
+
+            {% if r.photo %}
+            <a href="/api/report/{{ r.id }}/photo" target="_blank" rel="noopener">
+                <img class="review-photo" src="/api/report/{{ r.id }}/photo" alt="Report photo">
+            </a>
+            {% endif %}
+
+            <p class="review-location">
+                <strong>{{ r.town or 'Unknown town' }}</strong>, {{ r.district or 'Unknown district' }}, {{ r.region or 'Unknown region' }}
+            </p>
+            <p class="review-coords">{{ "%.5f"|format(r.latitude) }}, {{ "%.5f"|format(r.longitude) }}</p>
+
+            {% if r.description %}
+            <p class="review-description">{{ r.description }}</p>
+            {% endif %}
+
+            <form class="status-form" method="POST" action="/admin/report/{{ r.id }}/status">
+                <select name="status">
+                    <option value="unverified" {% if r.status == 'unverified' %}selected{% endif %}>Unverified</option>
+                    <option value="corroborated" {% if r.status == 'corroborated' %}selected{% endif %}>Corroborated (auto)</option>
+                    <option value="verified" {% if r.status == 'verified' %}selected{% endif %}>Verified</option>
+                    <option value="rejected" {% if r.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="resolved" {% if r.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </div>
+        {% else %}
+        <p>No reports yet.</p>
+        {% endfor %}
+    </main>
+</body>
+</html>

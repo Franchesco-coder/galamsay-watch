@@ -1,4 +1,7 @@
-from flask import Flask, jsonify, request, render_template, Response
+from flask import Flask, jsonify, request, render_template, Response, session, redirect, url_for
+import csv
+from io import StringIO
+from functools import wraps
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from sqlalchemy import func
@@ -10,7 +13,20 @@ from models import db, Report
 from region_lookup import resolve_region_district
 from sanitize import sanitize_text
 from image_utils import process_photo
+from corroboration import apply_corroboration
 from town_lookup import resolve_town
+
+
+def admin_required(view_func):
+    """Wrap an admin route so it redirects to the login page unless the
+    visitor's browser session already has is_admin set to True."""
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+        if not session.get('is_admin'):
+            return redirect(url_for('admin_login'))
+        return view_func(*args, **kwargs)
+    return wrapper
+
 
 ALLOWED_SEVERITIES = {'low', 'medium', 'high', 'critical'}
 
@@ -34,9 +50,6 @@ def create_app():
     @app.route('/api/report', methods=['POST'])
     @limiter.limit('5 per hour')
     def submit_report():
-        # Switched from a JSON body to multipart/form-data, because a file
-        # upload cannot be represented inside plain JSON. Text fields now
-        # come from request.form instead of a parsed JSON dictionary.
         latitude = request.form.get('latitude')
         longitude = request.form.get('longitude')
         severity = request.form.get('severity')
@@ -61,8 +74,6 @@ def create_app():
         photo_mimetype = None
         photo_file = request.files.get('photo')
 
-        # An empty file input still arrives as a file part with no filename,
-        # so we check filename too, not just whether the key exists.
         if photo_file and photo_file.filename:
             try:
                 photo_bytes, photo_mimetype = process_photo(photo_file)
@@ -86,6 +97,11 @@ def create_app():
 
         db.session.add(new_report)
         db.session.commit()
+
+        # Check whether this report, combined with recent nearby reports,
+        # now meets the automatic corroboration threshold (see
+        # corroboration.py). This never requires an admin to be watching.
+        apply_corroboration(db, Report, new_report)
 
         return jsonify(new_report.to_dict()), 201
 
@@ -179,6 +195,72 @@ def create_app():
             'longitude': location.longitude,
             'display_name': location.address
         }), 200
+
+    @app.route('/api/export.csv', methods=['GET'])
+    def export_csv():
+        reports = Report.query.order_by(Report.created_at.desc()).all()
+
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow([
+            'id', 'created_at', 'latitude', 'longitude', 'region', 'district',
+            'town', 'severity', 'status', 'description'
+        ])
+
+        for r in reports:
+            writer.writerow([
+                r.id, r.created_at.isoformat(), r.latitude, r.longitude,
+                r.region, r.district, r.town, r.severity, r.status,
+                r.description
+            ])
+
+        return Response(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=galamsay_watch_reports.csv'}
+        )
+
+    @app.route('/admin/login', methods=['GET', 'POST'])
+    def admin_login():
+        error = None
+
+        if request.method == 'POST':
+            password = request.form.get('password', '')
+            if password and password == app.config.get('ADMIN_PASSWORD'):
+                session['is_admin'] = True
+                return redirect(url_for('admin_page'))
+            error = 'Incorrect password'
+
+        return render_template('admin_login.html', error=error)
+
+    @app.route('/admin/logout')
+    def admin_logout():
+        session.pop('is_admin', None)
+        return redirect(url_for('admin_login'))
+
+    @app.route('/admin')
+    @admin_required
+    def admin_page():
+        reports = Report.query.order_by(Report.created_at.desc()).all()
+        return render_template('admin.html', reports=reports)
+
+    @app.route('/admin/report/<report_id>/status', methods=['POST'])
+    @admin_required
+    def update_status(report_id):
+        allowed_statuses = {'unverified', 'corroborated', 'verified', 'rejected', 'resolved'}
+        new_status = request.form.get('status')
+
+        if new_status not in allowed_statuses:
+            return jsonify({'error': 'Invalid status'}), 400
+
+        report = Report.query.get(report_id)
+        if not report:
+            return jsonify({'error': 'Report not found'}), 404
+
+        report.status = new_status
+        db.session.commit()
+
+        return redirect(url_for('admin_page'))
 
     @app.route('/')
     def home_page():

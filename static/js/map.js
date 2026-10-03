@@ -5,8 +5,11 @@ function popupHtml(r) {
            </a>`
         : '';
 
+    const statusLabel = r.status.charAt(0).toUpperCase() + r.status.slice(1);
+
     return `
         <span class="badge ${r.severity}">${r.severity}</span>
+        <span class="status-pill status-${esc(r.status)}">${esc(statusLabel)}</span>
         ${photoHtml}
         <div class="popup-row"><strong>Town:</strong> ${esc(r.town || 'Unknown')}</div>
         <div class="popup-row"><strong>District:</strong> ${esc(r.district || 'Unknown')}</div>
